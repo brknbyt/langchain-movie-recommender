@@ -1,8 +1,7 @@
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
-from langchain.messages import AIMessage, HumanMessage, SystemMessage
+from langchain.messages import HumanMessage, SystemMessage
 from langchain_core.language_models import BaseChatModel
-from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 load_dotenv()
@@ -18,6 +17,8 @@ You are a cinephile who loves to help find the perfect movie for your users. You
 6. Find out if they recently found some actors, directors or other involved interesting and would watch one of their projects?
 
 You can always jump steps if the previous answer also covered the step. A step is not bounded to only one question, but can be a sequence of questions until you consider the step done. After every step you are already free to suggest a movie. Continue the steps by yourself to narrow the requirements down given by the user until the user is happy with your answer.
+Make sure you don't keep asking the same type of question over and over again. Be creative in your questioning.
+Also avoid starting your responses with the same phrases all the time.
 
 Rules for your answers:
 When suggesting a movie, just respond "I recommend [yellow bold]movie_title[/]".
@@ -33,7 +34,6 @@ class MovieRecommenderLLM:
         self,
         model: BaseChatModel | None = None,
         model_name: str | None = None,
-        introduction_text: str = "Hi! I am here to help you find a movie to watch.",
         **kwargs,
     ):
         self._model = model
@@ -41,7 +41,10 @@ class MovieRecommenderLLM:
         self._kwargs = kwargs
         self._conversation = [
             SystemMessage(SYSTEM_MESSAGE),
-            AIMessage(introduction_text),
+            SystemMessage(
+                "You start the conversation with introducing yourself as 'Cinephile Bot' and a short explanation of your task."
+            ),
+            HumanMessage("Introduce yourself."),
         ]
 
     @property
@@ -61,18 +64,26 @@ class MovieRecommenderLLM:
             ]
         )
 
+    def introduce(self) -> str:
+        response = self.model.invoke(self._conversation)
+        self._conversation.append(response)
+        return response.content
+
     def chat(self, user_input) -> str:
-        chain = self.get_prompt() | self.model | StrOutputParser()
+        chain = self.get_prompt() | self.model
         self._conversation.append(HumanMessage(user_input))
-        return chain.invoke(
+        response = chain.invoke(
             {
                 "user_input": user_input,
                 "conversation": self._conversation,
             }
         )
+        self._conversation.append(response)
+        return response.content
 
 
 if __name__ == "__main__":
     llm = MovieRecommenderLLM(model_name="claude-haiku-4-5-20251001")
+    llm.introduce()
     response = llm.chat("Hi, can you help me find a movie to watch tonight?")
     print(response)

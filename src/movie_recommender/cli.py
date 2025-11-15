@@ -4,13 +4,10 @@ from rich.panel import Panel
 
 from movie_recommender.llm import MovieRecommenderLLM
 
-INTRO = "Hi, I am a cinephile bot. I am here to help you find the perfect movie for today. We will go through a serious of questions until you are happy with my recommendation."
-
 
 def question_loop():
-    llm = MovieRecommenderLLM(
-        model_name="claude-haiku-4-5-20251001", introduction_text=INTRO
-    )
+    llm = MovieRecommenderLLM(model_name="claude-haiku-4-5-20251001")
+    print(Panel(llm.introduce(), title="Cinephile Bot"))
     while True:
         user_input = input(">> ")
         if user_input.lower() in {"exit", "quit"}:
@@ -22,11 +19,9 @@ def question_loop():
 
 def print_intro():
     print("Type [italic yellow]exit[/italic yellow] to [red]quit[/red].\n")
-    print(Panel(INTRO, title="Cinephile Bot"))
 
 
 def main():
-    print_intro()
     question_loop()
 
 
