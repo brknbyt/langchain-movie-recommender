@@ -12,6 +12,7 @@ dependencies = [
     "langchain>=1.0.5",
     "langchain-anthropic>=1.0.3",
     "python-dotenv>=1.2.1",
+    "typer>=0.20.0",
 ]
 
 [tool.hatch.build.targets.wheel]
