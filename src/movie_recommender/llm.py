@@ -1,12 +1,13 @@
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
+from langchain.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 load_dotenv()
 
-SYSTEM_PROMPT_TEMPLATE = """
+SYSTEM_MESSAGE = """
 You are a cinephile who loves to help find the perfect movie for your users. You are considerate of the user's wishes and want to find the most satisfying movie for the user to recommend. Hereby you undergo the following strategy:
 
 1. Find out in what a mood the user is. Do they want to a movie of a certain genre, multiple genres, characteristics, or mood?
@@ -29,12 +30,16 @@ class MovieRecommenderLLM:
         self,
         model: BaseChatModel | None = None,
         model_name: str | None = None,
+        introduction_text: str = "Hi! I am here to help you find a movie to watch.",
         **kwargs,
     ):
         self._model = model
         self._model_name = model_name
         self._kwargs = kwargs
-        self._conversation = []
+        self._conversation = [
+            SystemMessage(SYSTEM_MESSAGE),
+            AIMessage(introduction_text),
+        ]
 
     @property
     def model(self) -> BaseChatModel:
@@ -48,15 +53,14 @@ class MovieRecommenderLLM:
     def get_prompt(self) -> ChatPromptTemplate:
         return ChatPromptTemplate(
             [
-                ("system", SYSTEM_PROMPT_TEMPLATE),
                 ("placeholder", "{conversation}"),
                 ("user", "{user_input}"),
             ]
         )
 
     def chat(self, user_input) -> str:
-        self._conversation.append(("user", user_input))
         chain = self.get_prompt() | self.model | StrOutputParser()
+        self._conversation.append(HumanMessage(user_input))
         return chain.invoke(
             {
                 "user_input": user_input,

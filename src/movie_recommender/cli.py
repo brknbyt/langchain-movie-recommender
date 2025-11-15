@@ -8,7 +8,9 @@ INTRO = "Hi, I am a cinephile bot. I am here to help you find the perfect movie 
 
 
 def question_loop():
-    llm = MovieRecommenderLLM(model_name="claude-haiku-4-5-20251001")
+    llm = MovieRecommenderLLM(
+        model_name="claude-haiku-4-5-20251001", introduction_text=INTRO
+    )
     while True:
         user_input = input(">> ")
         if user_input.lower() in {"exit", "quit"}:
