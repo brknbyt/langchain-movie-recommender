@@ -1,10 +1,7 @@
-from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain.messages import HumanMessage, SystemMessage
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
-
-load_dotenv()
 
 SYSTEM_MESSAGE = """
 You are a cinephile who loves to help find the perfect movie for your users. You are considerate of the user's wishes and want to find the most satisfying movie for the user to recommend. Hereby you undergo the following strategy:
@@ -36,6 +33,8 @@ class MovieRecommenderLLM:
         model_name: str | None = None,
         **kwargs,
     ):
+        if model is None and model_name is None:
+            raise ValueError("Either 'model' or 'model_name' must be provided")
         self._model = model
         self._model_name = model_name
         self._kwargs = kwargs
@@ -69,7 +68,7 @@ class MovieRecommenderLLM:
         self._conversation.append(response)
         return response.content
 
-    def chat(self, user_input) -> str:
+    def chat(self, user_input: str) -> str:
         chain = self.get_prompt() | self.model
         self._conversation.append(HumanMessage(user_input))
         response = chain.invoke(
