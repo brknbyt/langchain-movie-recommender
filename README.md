@@ -104,12 +104,7 @@ langchain-movie-recommender/
 └── README.md
 ```
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License.
+## TODOs
+  - Using a task runner like poe
 
 
