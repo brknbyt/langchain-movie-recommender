@@ -4,6 +4,7 @@ import typer
 from dotenv import load_dotenv
 from rich import print
 from rich.panel import Panel
+from typing_extensions import Annotated
 
 from movie_recommender.llm import MovieRecommenderLLM
 
@@ -25,10 +26,15 @@ def question_loop(llm: MovieRecommenderLLM) -> None:
         print(Panel(response, title="Cinephile Bot"))
 
 
-def main() -> None:
+def main(
+    debug: Annotated[
+        bool,
+        typer.Option(help="Shows verbose messages for easier debugging."),
+    ] = False,
+) -> None:
     model_name = os.getenv("MODEL_NAME")
     try:
-        llm = MovieRecommenderLLM(model_name=model_name)
+        llm = MovieRecommenderLLM(model_name=model_name, do_set_debug=debug)
     except ValueError:
         print(
             "[red]Error:[/red] No model name provided. Set MODEL_NAME in [italic].env[/]."

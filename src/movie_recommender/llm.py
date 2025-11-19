@@ -1,7 +1,7 @@
 from langchain.chat_models import init_chat_model
 from langchain.messages import HumanMessage, SystemMessage
+from langchain_core.globals import set_debug
 from langchain_core.language_models import BaseChatModel
-from langchain_core.prompts import ChatPromptTemplate
 
 SYSTEM_MESSAGE = """
 You are a cinephile who loves to help find the perfect movie for your users. You are considerate of the user's wishes and want to find the most satisfying movie for the user to recommend. Hereby you undergo the following strategy:
@@ -31,19 +31,16 @@ class MovieRecommenderLLM:
         self,
         model: BaseChatModel | None = None,
         model_name: str | None = None,
+        do_set_debug: bool = False,
         **kwargs,
     ):
         if model is None and model_name is None:
             raise ValueError("Either 'model' or 'model_name' must be provided")
+        if do_set_debug:
+            set_debug(True)
         self._model = model
         self._model_name = model_name
         self._kwargs = kwargs
-        self._prompt_template = ChatPromptTemplate(
-            [
-                ("placeholder", "{conversation}"),
-                ("user", "{user_input}"),
-            ]
-        )
         self._conversation = [
             SystemMessage(SYSTEM_MESSAGE),
             SystemMessage(
@@ -67,14 +64,8 @@ class MovieRecommenderLLM:
         return response.content
 
     def chat(self, user_input: str) -> str:
-        chain = self._prompt_template | self.model
         self._conversation.append(HumanMessage(user_input))
-        response = chain.invoke(
-            {
-                "user_input": user_input,
-                "conversation": self._conversation,
-            }
-        )
+        response = self.model.invoke(self._conversation)
         self._conversation.append(response)
         return response.content
 
