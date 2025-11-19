@@ -20,7 +20,7 @@ def question_loop(llm: MovieRecommenderLLM) -> None:
     while True:
         user_input = input(">> ")
         if user_input.lower() in {"exit", "quit"}:
-            print("Goodbye!")
+            print(Panel("Goodbye! :wave:", title="Cinephile Bot"))
             raise typer.Exit()
         response = llm.chat(user_input)
         print(Panel(response, title="Cinephile Bot"))
