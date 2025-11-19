@@ -14,7 +14,7 @@ def test_create_llm_with_model_name():
 
 def test_chat_with_fake_model(mocker, fake_model):
     llm = MovieRecommenderLLM(model=fake_model)
-    get_prompt_spy = mocker.spy(llm, "get_prompt")
+    assert len(llm._conversation) == 3  # Initial messages
     response = llm.chat("Hi, can you help me find a movie to watch tonight?")
-    get_prompt_spy.assert_called_once()
     assert response == "What about **The Holy Mountain**?"
+    assert len(llm._conversation) == 5  # Initial + user + response
