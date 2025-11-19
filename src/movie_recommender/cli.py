@@ -43,5 +43,15 @@ def main(
     question_loop(llm)
 
 
+def cli() -> None:
+    """Entry point for the CLI."""
+    typer.run(main)
+
+
+def cli_debug() -> None:
+    """Entry point for running with debug mode enabled."""
+    typer.run(lambda: main(debug=True))
+
+
 if __name__ == "__main__":
     typer.run(main)

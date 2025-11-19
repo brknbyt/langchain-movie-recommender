@@ -15,6 +15,10 @@ dependencies = [
     "typer>=0.20.0",
 ]
 
+[project.scripts]
+movie-recommender = "movie_recommender.cli:cli"
+movie-recommender-debug = "movie_recommender.cli:cli_debug"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/movie_recommender"]
 
