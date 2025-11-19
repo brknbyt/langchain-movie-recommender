@@ -38,6 +38,12 @@ class MovieRecommenderLLM:
         self._model = model
         self._model_name = model_name
         self._kwargs = kwargs
+        self._prompt_template = ChatPromptTemplate(
+            [
+                ("placeholder", "{conversation}"),
+                ("user", "{user_input}"),
+            ]
+        )
         self._conversation = [
             SystemMessage(SYSTEM_MESSAGE),
             SystemMessage(
@@ -55,21 +61,13 @@ class MovieRecommenderLLM:
             )
         return self._model
 
-    def get_prompt(self) -> ChatPromptTemplate:
-        return ChatPromptTemplate(
-            [
-                ("placeholder", "{conversation}"),
-                ("user", "{user_input}"),
-            ]
-        )
-
     def introduce(self) -> str:
         response = self.model.invoke(self._conversation)
         self._conversation.append(response)
         return response.content
 
     def chat(self, user_input: str) -> str:
-        chain = self.get_prompt() | self.model
+        chain = self._prompt_template | self.model
         self._conversation.append(HumanMessage(user_input))
         response = chain.invoke(
             {
