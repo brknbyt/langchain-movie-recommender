@@ -46,7 +46,6 @@ class MovieRecommenderLLM:
             SystemMessage(
                 "You start the conversation with introducing yourself as 'Cinephile Bot' and a short explanation of your task."
             ),
-            HumanMessage("Introduce yourself."),
         ]
 
     @property
@@ -59,9 +58,7 @@ class MovieRecommenderLLM:
         return self._model
 
     def introduce(self) -> str:
-        response = self.model.invoke(self._conversation)
-        self._conversation.append(response)
-        return response.content
+        return self.chat("Introduce yourself.")
 
     def chat(self, user_input: str) -> str:
         self._conversation.append(HumanMessage(user_input))
