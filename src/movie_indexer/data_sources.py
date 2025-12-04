@@ -47,7 +47,7 @@ class KaggleCSVDataSource:
         df = pd.read_csv(csv_path)
 
         if self._drop_na:
-            df = df.dropna(subset=[self._content_column])
+            df = df.dropna()
 
         return DataFrameLoader(df, page_content_column=self._content_column)
 
