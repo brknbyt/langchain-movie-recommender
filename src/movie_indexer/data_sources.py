@@ -1,5 +1,3 @@
-"""Data source abstractions for the movie indexer."""
-
 import os
 
 import kagglehub

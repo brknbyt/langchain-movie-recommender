@@ -1,3 +1,5 @@
+import os
+
 from dotenv import load_dotenv
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -12,7 +14,9 @@ if __name__ == "__main__":
     data_source = KaggleCSVDataSource.from_env()
     loader = data_source.get_loader()
     embedding = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
+        model_name=os.getenv(
+            "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+        )
     )
 
     indexer = MovieIndexer(
