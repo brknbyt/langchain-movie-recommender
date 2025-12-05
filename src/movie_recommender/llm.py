@@ -1,3 +1,4 @@
+from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 from langchain.messages import HumanMessage, SystemMessage
 from langchain_core.globals import set_debug
@@ -39,6 +40,7 @@ class MovieRecommenderLLM:
         if do_set_debug:
             set_debug(True)
         self._model = model
+        self._agent = None
         self._model_name = model_name
         self._kwargs = kwargs
         self._conversation = [
@@ -57,17 +59,35 @@ class MovieRecommenderLLM:
             )
         return self._model
 
+    @property
+    def agent(self):
+        if self._model is None and self._agent is None:
+            from movie_recommender.tools import movie_recommendation
+
+            self._agent = create_agent(
+                model=self.model,
+                tools=[movie_recommendation],
+            )
+        return self._agent
+
     def introduce(self) -> str:
         return self.chat("Introduce yourself.")
 
     def chat(self, user_input: str) -> str:
         self._conversation.append(HumanMessage(user_input))
-        response = self.model.invoke(self._conversation)
+        for step in self.agent.stream(
+            {"messages": self._conversation},
+            stream_mode="values",
+        ):
+            response = step["messages"][-1]
         self._conversation.append(response)
         return response.content
 
 
 if __name__ == "__main__":
+    import dotenv
+
+    dotenv.load_dotenv()
     llm = MovieRecommenderLLM(model_name="claude-haiku-4-5-20251001")
     llm.introduce()
     response = llm.chat("Hi, can you help me find a movie to watch tonight?")
