@@ -3,10 +3,14 @@ from langchain_core.vectorstores import VectorStore
 
 
 class MovieIndexer:
-    """Indexes movie data using a provided loader and vector store."""
+    """Indexes movie data using a provided loader and vector store.
 
-    def __init__(self, loader: BaseLoader, vector_store: VectorStore):
-        """Initializes the MovieIndexer.
+    This class takes a document loader and vector store, loads movie documents,
+    and indexes them into the vector store for similarity search.
+    """
+
+    def __init__(self, loader: BaseLoader, vector_store: VectorStore) -> None:
+        """Initialize the MovieIndexer.
 
         Args:
             loader: The data loader to load movie data.
@@ -16,7 +20,7 @@ class MovieIndexer:
         self._vector_store = vector_store
 
     def index(self) -> None:
-        """Indexes the movie data.
+        """Index the movie data.
 
         Loads documents using the loader and adds them to the vector store.
         """

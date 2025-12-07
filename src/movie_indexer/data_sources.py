@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 import kagglehub
 import pandas as pd
@@ -18,16 +19,15 @@ class KaggleCSVDataSource:
         dataset_handle: str,
         csv_filename: str,
         content_column: str,
-        **kwargs,
-    ):
-        """
-        Initialize the Kaggle CSV data source.
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the Kaggle CSV data source.
 
         Args:
-            dataset_handle: Kaggle dataset identifier (e.g., "user/dataset-name")
-            csv_filename: Name of the CSV file within the dataset
-            content_column: Column name to use as document content
-            **kwargs: Additional keyword arguments (e.g., drop_na)
+            dataset_handle: Kaggle dataset identifier (e.g., "user/dataset-name").
+            csv_filename: Name of the CSV file within the dataset.
+            content_column: Column name to use as document content.
+            **kwargs: Additional keyword arguments (e.g., drop_na).
         """
         self._dataset_handle = dataset_handle
         self._csv_filename = csv_filename
@@ -35,8 +35,7 @@ class KaggleCSVDataSource:
         self._drop_na = kwargs.get("drop_na", True)
 
     def get_loader(self) -> BaseLoader:
-        """
-        Downloads the Kaggle dataset and returns a configured DataFrameLoader.
+        """Download the Kaggle dataset and return a configured DataFrameLoader.
 
         Returns:
             BaseLoader: A DataFrameLoader configured with the CSV data.
@@ -53,8 +52,7 @@ class KaggleCSVDataSource:
 
     @classmethod
     def from_env(cls) -> "KaggleCSVDataSource":
-        """
-        Factory method to create a KaggleCSVDataSource from environment variables.
+        """Factory method to create a KaggleCSVDataSource from environment variables.
 
         Expected environment variables:
             - KAGGLE_DATASET_HANDLE: Kaggle dataset identifier

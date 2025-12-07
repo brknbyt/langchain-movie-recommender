@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from dotenv import load_dotenv
 from langchain_core.embeddings import Embeddings
@@ -12,30 +13,24 @@ load_dotenv()
 
 
 def create_vector_store(
-    vector_store_name: str, embedding: Embeddings, **kwargs
+    vector_store_name: str, embedding: Embeddings, **kwargs: Any
 ) -> VectorStore:
     """Factory method to create a vector store based on the given name.
 
-        Args:
-            vector_store_name: Name of the vector store     embedding = HuggingFaceEmbeddings(
-            model_name=os.getenv(
-                "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
-            )
-        )
-        store = vector_store(
-            os.getenv("VECTOR_STORE", "in_memory"),
-            embedding=embedding,
-            initialize_table=False,
-        )
-        res = store.similarity_search("A movie about space exploration.")
-        print(res)
-    to create.
+    Supports both in-memory and PostgreSQL-based vector stores.
 
-        Returns:
-            VectorStore : An instance of the specified vector store.
+    Args:
+        vector_store_name: Name of the vector store to create
+            ("in_memory" or "pgvectorstore").
+        embedding: The embeddings model to use for the vector store.
+        **kwargs: Additional keyword arguments. For "pgvectorstore",
+            accepts "initialize_table" (bool) to control table creation.
 
-        Raises:
-            ValueError: If the specified vector store is not supported.
+    Returns:
+        VectorStore: An instance of the specified vector store.
+
+    Raises:
+        ValueError: If the specified vector store is not supported.
     """
     if vector_store_name == "in_memory":
         return InMemoryVectorStore(embedding=embedding)
@@ -64,7 +59,13 @@ def create_vector_store(
         raise ValueError(f"Unsupported vector store: {vector_store_name}")
 
 
-def index():
+def index() -> None:
+    """Index movie data from Kaggle dataset into a vector store.
+
+    Loads configuration from environment variables, creates a data source,
+    initializes embeddings, and indexes the movie data into the specified
+    vector store.
+    """
     data_source = KaggleCSVDataSource.from_env()
     loader = data_source.get_loader()
     embedding = HuggingFaceEmbeddings(
@@ -82,7 +83,13 @@ def index():
     indexer.index()
 
 
-def search():
+def search() -> None:
+    """Search for movies using similarity search in the vector store.
+
+    Initializes embeddings and connects to the configured vector store
+    to perform a similarity search for movies matching the query.
+    Prints the search results to stdout.
+    """
     embedding = HuggingFaceEmbeddings(
         model_name=os.getenv(
             "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
@@ -93,9 +100,11 @@ def search():
         embedding=embedding,
         initialize_table=False,
     )
-    res = store.similarity_search("A movie about space exploration.")
+    res = store.similarity_search(
+        "hard science fiction space exploration realistic grounded"
+    )
     print(res)
 
 
 if __name__ == "__main__":
-    index()
+    search()

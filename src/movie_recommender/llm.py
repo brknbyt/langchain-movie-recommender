@@ -1,8 +1,11 @@
+from typing import Any
+
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 from langchain.messages import HumanMessage, SystemMessage
 from langchain_core.globals import set_debug
 from langchain_core.language_models import BaseChatModel
+from langgraph.graph.state import CompiledStateGraph
 
 SYSTEM_MESSAGE = """
 You are a cinephile who loves to help find the perfect movie for your users. You are considerate of the user's wishes and want to find the most satisfying movie for the user to recommend. Hereby you undergo the following strategy:
@@ -26,22 +29,39 @@ Make your response visually appealing and easy to read by using console markup f
 
 
 class MovieRecommenderLLM:
-    """A class representing a movie recommender LLM."""
+    """A movie recommender chatbot powered by a Large Language Model.
+
+    This class implements a conversational agent that helps users find
+    the perfect movie by asking targeted questions about their preferences,
+    mood, and viewing constraints. The agent uses a structured approach
+    to narrow down recommendations.
+    """
 
     def __init__(
         self,
         model: BaseChatModel | None = None,
         model_name: str | None = None,
         do_set_debug: bool = False,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the MovieRecommenderLLM.
+
+        Args:
+            model: Pre-initialized chat model instance.
+            model_name: Name of the model to initialize (e.g., "claude-haiku-4-5-20251001").
+            do_set_debug: Whether to enable LangChain debug mode.
+            **kwargs: Additional keyword arguments passed to model initialization.
+
+        Raises:
+            ValueError: If neither model nor model_name is provided.
+        """
         if model is None and model_name is None:
             raise ValueError("Either 'model' or 'model_name' must be provided")
         if do_set_debug:
             set_debug(True)
         self._model = model
-        self._agent = None
         self._model_name = model_name
+        self._agent = None
         self._kwargs = kwargs
         self._conversation = [
             SystemMessage(SYSTEM_MESSAGE),
@@ -52,6 +72,11 @@ class MovieRecommenderLLM:
 
     @property
     def model(self) -> BaseChatModel:
+        """Get or initialize the chat model.
+
+        Returns:
+            BaseChatModel: The initialized chat model instance.
+        """
         if self._model is None:
             self._model = init_chat_model(
                 model=self._model_name,
@@ -60,8 +85,13 @@ class MovieRecommenderLLM:
         return self._model
 
     @property
-    def agent(self):
-        if self._model is None and self._agent is None:
+    def agent(self) -> CompiledStateGraph:
+        """Get or create the movie recommendation agent.
+
+        Returns:
+            CompiledStateGraph: The LangGraph agent configured with movie recommendation tools.
+        """
+        if self._agent is None:
             from movie_recommender.tools import movie_recommendation
 
             self._agent = create_agent(
@@ -71,9 +101,22 @@ class MovieRecommenderLLM:
         return self._agent
 
     def introduce(self) -> str:
+        """Get the bot's introduction message.
+
+        Returns:
+            str: The bot's introduction and explanation of its purpose.
+        """
         return self.chat("Introduce yourself.")
 
     def chat(self, user_input: str) -> str:
+        """Process user input and generate a response.
+
+        Args:
+            user_input: The user's message or question.
+
+        Returns:
+            str: The agent's response as a string.
+        """
         self._conversation.append(HumanMessage(user_input))
         for step in self.agent.stream(
             {"messages": self._conversation},

@@ -1,5 +1,7 @@
 import os
+from typing import Any
 
+from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.tools import tool
 from langchain_core.vectorstores import VectorStore
@@ -7,30 +9,24 @@ from langchain_huggingface import HuggingFaceEmbeddings
 
 
 def create_vector_store(
-    vector_store_name: str, embedding: Embeddings, **kwargs
+    vector_store_name: str, embedding: Embeddings, **kwargs: Any
 ) -> VectorStore:
     """Factory method to create a vector store based on the given name.
 
-        Args:
-            vector_store_name: Name of the vector store     embedding = HuggingFaceEmbeddings(
-            model_name=os.getenv(
-                "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
-            )
-        )
-        store = vector_store(
-            os.getenv("VECTOR_STORE", "in_memory"),
-            embedding=embedding,
-            initialize_table=False,
-        )
-        res = store.similarity_search("A movie about space exploration.")
-        print(res)
-    to create.
+    Supports both in-memory and PostgreSQL-based vector stores.
 
-        Returns:
-            VectorStore : An instance of the specified vector store.
+    Args:
+        vector_store_name: Name of the vector store to create
+            ("in_memory" or "pgvectorstore").
+        embedding: The embeddings model to use for the vector store.
+        **kwargs: Additional keyword arguments. For "pgvectorstore",
+            accepts "initialize_table" (bool) to control table creation.
 
-        Raises:
-            ValueError: If the specified vector store is not supported.
+    Returns:
+        VectorStore: An instance of the specified vector store.
+
+    Raises:
+        ValueError: If the specified vector store is not supported.
     """
     if vector_store_name == "in_memory":
         from langchain_core.vectorstores import InMemoryVectorStore
@@ -72,7 +68,17 @@ store = create_vector_store(
 
 
 @tool()
-def movie_recommendation(query: str):
-    """Tool to recommend movies based on a user query."""
+def movie_recommendation(query: str) -> list[Document]:
+    """Tool to recommend movies based on a user query.
+
+    Searches the vector store for movies that match the user's query
+    using semantic similarity search.
+
+    Args:
+        query: The user's search query describing their movie preferences.
+
+    Returns:
+        list[Document]: A list of Document objects representing matching movies.
+    """
     res = store.similarity_search(query)
     return res

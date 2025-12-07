@@ -12,6 +12,14 @@ load_dotenv()
 
 
 def question_loop(llm: MovieRecommenderLLM) -> None:
+    """Run the main conversation loop with the movie recommender bot.
+
+    Args:
+        llm: The MovieRecommenderLLM instance to interact with.
+
+    Raises:
+        typer.Exit: When the user types 'exit' or 'quit'.
+    """
     intro = (
         llm.introduce()
         + "\n\nType [italic yellow]exit[/italic yellow] to [red]quit[/red].\n"
@@ -32,6 +40,17 @@ def main(
         typer.Option(help="Shows verbose messages for easier debugging."),
     ] = False,
 ) -> None:
+    """Main entry point for the movie recommender CLI application.
+
+    Initializes the MovieRecommenderLLM with configuration from environment
+    variables and starts the interactive question loop.
+
+    Args:
+        debug: Enable debug mode for verbose LangChain output.
+
+    Raises:
+        typer.Exit: If MODEL_NAME is not set in environment variables.
+    """
     model_name = os.getenv("MODEL_NAME")
     try:
         llm = MovieRecommenderLLM(model_name=model_name, do_set_debug=debug)
