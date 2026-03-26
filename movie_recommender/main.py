@@ -1,11 +1,11 @@
 from typing import Any
 
-from langchain_core.documents import Document
+import config
+from data_sources import KaggleCSVDataSource
+from indexer import MovieIndexer
 from langchain_core.embeddings import Embeddings
-from langchain_core.tools import tool
-from langchain_core.vectorstores import VectorStore
-
-import movie_recommender.config as config
+from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
+from langchain_huggingface import HuggingFaceEmbeddings
 
 
 def create_vector_store(
@@ -29,8 +29,6 @@ def create_vector_store(
         ValueError: If the specified vector store is not supported.
     """
     if vector_store_name == "in_memory":
-        from langchain_core.vectorstores import InMemoryVectorStore
-
         return InMemoryVectorStore(embedding=embedding)
     if vector_store_name == "pgvectorstore":
         from langchain_postgres import PGEngine, PGVectorStore
@@ -57,18 +55,42 @@ def create_vector_store(
         raise ValueError(f"Unsupported vector store: {vector_store_name}")
 
 
-@tool()
-def movie_recommendation(query: str) -> list[Document]:
-    """Tool to recommend movies based on a user query.
+def index() -> None:
+    """Index movie data from Kaggle dataset into a vector store.
 
-    Searches the vector store for movies that match the user's query
-    using semantic similarity search.
-
-    Args:
-        query: The user's search query describing their movie preferences.
-
-    Returns:
-        list[Document]: A list of Document objects representing matching movies.
+    Loads configuration from environment variables, creates a data source,
+    initializes embeddings, and indexes the movie data into the specified
+    vector store.
     """
-    res = store.similarity_search(query)
-    return res
+    data_source = KaggleCSVDataSource.from_env()
+    loader = data_source.get_loader()
+    embedding = HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL)
+
+    indexer = MovieIndexer(
+        loader=loader,
+        vector_store=create_vector_store(config.VECTOR_STORE_NAME, embedding),
+    )
+    indexer.index()
+
+
+def search() -> None:
+    """Search for movies using similarity search in the vector store.
+
+    Initializes embeddings and connects to the configured vector store
+    to perform a similarity search for movies matching the query.
+    Prints the search results to stdout.
+    """
+    embedding = HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL)
+    store = create_vector_store(
+        vector_store_name=config.VECTOR_STORE_NAME,
+        embedding=embedding,
+        initialize_table=False,
+    )
+    res = store.similarity_search(
+        "hard science fiction space exploration realistic grounded"
+    )
+    print(res)
+
+
+if __name__ == "__main__":
+    search()

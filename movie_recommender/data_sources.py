@@ -1,12 +1,11 @@
 import os
 from typing import Any
 
+import config
 import kagglehub
 import pandas as pd
 from langchain_community.document_loaders.dataframe import DataFrameLoader
 from langchain_core.document_loaders import BaseLoader
-
-import movie_indexer.config as config
 
 
 class KaggleCSVDataSource:

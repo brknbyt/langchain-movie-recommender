@@ -1,16 +1,11 @@
-import os
 from typing import Any
 
+import config
 from langchain_core.embeddings import Embeddings
-from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
-from langchain_huggingface import HuggingFaceEmbeddings
-
-import movie_indexer.config as config
-from movie_indexer.data_sources import KaggleCSVDataSource
-from movie_indexer.indexer import MovieIndexer
+from langchain_core.vectorstores import VectorStore
 
 
-def create_vector_store(
+def get_vector_store(
     vector_store_name: str, embedding: Embeddings, **kwargs: Any
 ) -> VectorStore:
     """Factory method to create a vector store based on the given name.
@@ -31,6 +26,8 @@ def create_vector_store(
         ValueError: If the specified vector store is not supported.
     """
     if vector_store_name == "in_memory":
+        from langchain_core.vectorstores import InMemoryVectorStore
+
         return InMemoryVectorStore(embedding=embedding)
     if vector_store_name == "pgvectorstore":
         from langchain_postgres import PGEngine, PGVectorStore
@@ -55,44 +52,3 @@ def create_vector_store(
         )
     else:
         raise ValueError(f"Unsupported vector store: {vector_store_name}")
-
-
-def index() -> None:
-    """Index movie data from Kaggle dataset into a vector store.
-
-    Loads configuration from environment variables, creates a data source,
-    initializes embeddings, and indexes the movie data into the specified
-    vector store.
-    """
-    data_source = KaggleCSVDataSource.from_env()
-    loader = data_source.get_loader()
-    embedding = HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL)
-
-    indexer = MovieIndexer(
-        loader=loader,
-        vector_store=create_vector_store(config.VECTOR_STORE_NAME, embedding),
-    )
-    indexer.index()
-
-
-def search() -> None:
-    """Search for movies using similarity search in the vector store.
-
-    Initializes embeddings and connects to the configured vector store
-    to perform a similarity search for movies matching the query.
-    Prints the search results to stdout.
-    """
-    embedding = HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL)
-    store = create_vector_store(
-        vector_store_name=config.VECTOR_STORE_NAME,
-        embedding=embedding,
-        initialize_table=False,
-    )
-    res = store.similarity_search(
-        "hard science fiction space exploration realistic grounded"
-    )
-    print(res)
-
-
-if __name__ == "__main__":
-    search()

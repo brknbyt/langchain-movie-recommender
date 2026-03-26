@@ -62,13 +62,23 @@ class MovieRecommenderLLM:
         self._model = model
         self._model_name = model_name
         self._agent = None
+        self._tools = []
         self._kwargs = kwargs
-        self._conversation = [
+        self._conversation: list[SystemMessage | HumanMessage] = [
             SystemMessage(SYSTEM_MESSAGE),
             SystemMessage(
                 "You start the conversation with introducing yourself as 'Cinephile Bot' and a short explanation of your task."
             ),
         ]
+
+    def set_tools(self, tools: list) -> None:
+        """Set the tools for the agent.
+
+        Args:
+            tools: A list of tools to be used by the agent.
+        """
+        self._tools = tools
+        self._agent = None
 
     @property
     def model(self) -> BaseChatModel:
@@ -82,7 +92,7 @@ class MovieRecommenderLLM:
                 model=self._model_name,
                 **self._kwargs,
             )
-        return self._model
+        return self._model  # type: ignore[return-value]
 
     @property
     def agent(self) -> CompiledStateGraph:
@@ -92,11 +102,9 @@ class MovieRecommenderLLM:
             CompiledStateGraph: The LangGraph agent configured with movie recommendation tools.
         """
         if self._agent is None:
-            from movie_recommender.tools import movie_recommendation
-
             self._agent = create_agent(
                 model=self.model,
-                tools=[movie_recommendation],
+                tools=self._tools,
             )
         return self._agent
 
