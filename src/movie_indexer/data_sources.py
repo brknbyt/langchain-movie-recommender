@@ -6,6 +6,8 @@ import pandas as pd
 from langchain_community.document_loaders.dataframe import DataFrameLoader
 from langchain_core.document_loaders import BaseLoader
 
+import movie_indexer.config as config
+
 
 class KaggleCSVDataSource:
     """Data source that loads movie data from a Kaggle dataset CSV file.
@@ -63,8 +65,19 @@ class KaggleCSVDataSource:
             KaggleCSVDataSource: Configured instance from environment variables.
         """
         return cls(
-            dataset_handle=os.getenv("KAGGLE_DATASET_HANDLE"),
-            csv_filename=os.getenv("CSV_FILENAME", "TMDB_all_movies.csv"),
-            content_column=os.getenv("CSV_CONTENT_COLUMN", "overview"),
+            dataset_handle=config.KAGGLE_DATASET_PATH,
+            csv_filename=config.CSV_FILENAME,
+            content_column=config.CSV_CONTENT_COLUMN,
             drop_na=True,
         )
+
+
+class KaggleWebLoader:
+    def __init__(self, dataset_handle: str, file_path: str) -> None:
+        NotImplementedError
+
+    def load():
+        data_dir = kagglehub.dataset_download(self._dataset_handle)
+
+        csv_path = os.path.join(data_dir, self._csv_filename)
+        df = pd.read_csv(csv_path)

@@ -1,14 +1,12 @@
 import os
 
 import typer
-from dotenv import load_dotenv
 from rich import print
 from rich.panel import Panel
 from typing_extensions import Annotated
 
+import movie_recommender.config as config
 from movie_recommender.llm import MovieRecommenderLLM
-
-load_dotenv()
 
 
 def question_loop(llm: MovieRecommenderLLM) -> None:
@@ -51,9 +49,8 @@ def main(
     Raises:
         typer.Exit: If MODEL_NAME is not set in environment variables.
     """
-    model_name = os.getenv("MODEL_NAME")
     try:
-        llm = MovieRecommenderLLM(model_name=model_name, do_set_debug=debug)
+        llm = MovieRecommenderLLM(model_name=config.MODEL_NAME, do_set_debug=debug)
     except ValueError:
         print(
             "[red]Error:[/red] No model name provided. Set MODEL_NAME in [italic].env[/]."

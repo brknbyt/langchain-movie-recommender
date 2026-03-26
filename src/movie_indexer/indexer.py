@@ -25,4 +25,4 @@ class MovieIndexer:
         Loads documents using the loader and adds them to the vector store.
         """
         documents = self._loader.load()
-        self._vector_store.add_documents(documents)
+        self._vector_store.add_documents(documents[:10])
