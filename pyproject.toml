@@ -12,10 +12,6 @@ dependencies = [
     "typer>=0.20.0",
 ]
 
-[project.scripts]
-movie-recommender = "movie_recommender.cli:cli"
-movie-recommender-debug = "movie_recommender.cli:cli_debug"
-
 [dependency-groups]
 dev = [
     "ipykernel>=7.1.0",
