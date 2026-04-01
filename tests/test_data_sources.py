@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pandas as pd
 
-from movie_indexer.data_sources import KaggleCSVDataSource
+from movie_recommender.data_sources import KaggleCSVDataSource
 
 
 def test_data_source_initialization():

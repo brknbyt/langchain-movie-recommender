@@ -1,8 +1,16 @@
+import os
 from typing import Any
 
-import config
+from dotenv import load_dotenv
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStore
+from langchain_huggingface import HuggingFaceEmbeddings
+
+from movie_recommender import config
+from movie_recommender.data_sources import KaggleCSVDataSource
+from movie_recommender.indexer import MovieIndexer
+
+load_dotenv()
 
 
 def get_vector_store(
@@ -52,3 +60,54 @@ def get_vector_store(
         )
     else:
         raise ValueError(f"Unsupported vector store: {vector_store_name}")
+
+
+def index() -> None:
+    """Index movie data from Kaggle dataset into a vector store.
+
+    Loads configuration from environment variables, creates a data source,
+    initializes embeddings, and indexes the movie data into the specified
+    vector store.
+    """
+    data_source = KaggleCSVDataSource.from_env()
+    loader = data_source.get_loader()
+    embedding = HuggingFaceEmbeddings(
+        model_name=os.getenv(
+            "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+        )
+    )
+
+    indexer = MovieIndexer(
+        loader=loader,
+        vector_store=get_vector_store(
+            os.getenv("VECTOR_STORE", "in_memory"), embedding
+        ),
+    )
+    indexer.index()
+
+
+def search() -> None:
+    """Search for movies using similarity search in the vector store.
+
+    Initializes embeddings and connects to the configured vector store
+    to perform a similarity search for movies matching the query.
+    Prints the search results to stdout.
+    """
+    embedding = HuggingFaceEmbeddings(
+        model_name=os.getenv(
+            "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+        )
+    )
+    store = get_vector_store(
+        os.getenv("VECTOR_STORE", "in_memory"),
+        embedding=embedding,
+        initialize_table=False,
+    )
+    res = store.similarity_search(
+        "hard science fiction space exploration realistic grounded"
+    )
+    print(res)
+
+
+if __name__ == "__main__":
+    search()

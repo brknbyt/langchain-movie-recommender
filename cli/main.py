@@ -1,10 +1,14 @@
+from typing import Annotated
+
 import typer
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from rich import print
 from rich.panel import Panel
-from typing_extensions import Annotated
 
 import movie_recommender.config as config
 from movie_recommender.llm import MovieRecommenderLLM
+from movie_recommender.tools import make_movie_recommendation_tool
+from movie_recommender.vectorstore import get_vector_store
 
 
 def question_loop(llm: MovieRecommenderLLM) -> None:
@@ -16,6 +20,13 @@ def question_loop(llm: MovieRecommenderLLM) -> None:
     Raises:
         typer.Exit: When the user types 'exit' or 'quit'.
     """
+    embedding = HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL)
+    vector_store = get_vector_store(
+        vector_store_name=config.VECTOR_STORE_NAME,
+        embedding=embedding,
+        initialize_table=False,
+    )
+    llm.set_tools([make_movie_recommendation_tool(vector_store)])
     intro = (
         llm.introduce()
         + "\n\nType [italic yellow]exit[/italic yellow] to [red]quit[/red].\n"
@@ -49,11 +60,13 @@ def main(
     """
     try:
         llm = MovieRecommenderLLM(model_name=config.MODEL_NAME, do_set_debug=debug)
-    except ValueError:
+    except ValueError as err:
         print(
-            "[red]Error:[/red] No model name provided. Set MODEL_NAME in [italic].env[/]."
+            """
+            [red]Error:[/red] No model name provided. Set MODEL_NAME in [italic].env[/].
+            """
         )
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from err
     question_loop(llm)
 
 

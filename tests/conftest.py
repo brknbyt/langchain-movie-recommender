@@ -1,7 +1,10 @@
-from typing import Any, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import pytest
+from langchain_core.language_models.base import LanguageModelInput
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
+from langchain_core.messages import AIMessage
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 
@@ -15,8 +18,12 @@ class FakeChatModelWithTools(FakeListChatModel):
     """
 
     def bind_tools(
-        self, tools: Sequence[BaseTool], **kwargs: Any
-    ) -> Runnable:
+        self,
+        tools: Sequence[dict[str, Any] | type | Callable | BaseTool],
+        *,
+        tool_choice: str | None = None,
+        **kwargs: Any,
+    ) -> Runnable[LanguageModelInput, AIMessage]:
         """Mock bind_tools method to support agent creation.
 
         Args:

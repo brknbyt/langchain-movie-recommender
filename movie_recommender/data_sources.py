@@ -1,11 +1,12 @@
 import os
 from typing import Any
 
-import config
 import kagglehub
 import pandas as pd
 from langchain_community.document_loaders.dataframe import DataFrameLoader
 from langchain_core.document_loaders import BaseLoader
+
+from movie_recommender import config
 
 
 class KaggleCSVDataSource:
@@ -69,14 +70,3 @@ class KaggleCSVDataSource:
             content_column=config.CSV_CONTENT_COLUMN,
             drop_na=True,
         )
-
-
-class KaggleWebLoader:
-    def __init__(self, dataset_handle: str, file_path: str) -> None:
-        NotImplementedError
-
-    def load():
-        data_dir = kagglehub.dataset_download(self._dataset_handle)
-
-        csv_path = os.path.join(data_dir, self._csv_filename)
-        df = pd.read_csv(csv_path)

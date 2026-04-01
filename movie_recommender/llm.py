@@ -25,7 +25,7 @@ Rules for your answers:
 When suggesting a movie, just respond "I recommend [yellow bold]movie_title[/]".
 Limit yourself to one question per turn. Keep your responses short and coherent.
 Make your response visually appealing and easy to read by using console markup from the rich python library where appropriate and avoid markdown syntax like putting text between asterisk.
-"""
+"""  # noqa: E501
 
 
 class MovieRecommenderLLM:
@@ -48,7 +48,7 @@ class MovieRecommenderLLM:
 
         Args:
             model: Pre-initialized chat model instance.
-            model_name: Name of the model to initialize (e.g., "claude-haiku-4-5-20251001").
+            model_name: Name of the model to initialize (e.g., "claude-haiku-4-5...").
             do_set_debug: Whether to enable LangChain debug mode.
             **kwargs: Additional keyword arguments passed to model initialization.
 
@@ -67,7 +67,9 @@ class MovieRecommenderLLM:
         self._conversation: list[SystemMessage | HumanMessage] = [
             SystemMessage(SYSTEM_MESSAGE),
             SystemMessage(
-                "You start the conversation with introducing yourself as 'Cinephile Bot' and a short explanation of your task."
+                """
+                You start the conversation with introducing yourself as 'Cinephile Bot' and a short explanation of your task.
+                """  # noqa: E501
             ),
         ]
 
@@ -92,14 +94,15 @@ class MovieRecommenderLLM:
                 model=self._model_name,
                 **self._kwargs,
             )
-        return self._model  # type: ignore[return-value]
+        return self._model  # ty: ignore[invalid-return-type]
 
     @property
     def agent(self) -> CompiledStateGraph:
         """Get or create the movie recommendation agent.
 
         Returns:
-            CompiledStateGraph: The LangGraph agent configured with movie recommendation tools.
+            CompiledStateGraph: The LangGraph agent configured with movie recommendation
+                                tools.
         """
         if self._agent is None:
             self._agent = create_agent(
