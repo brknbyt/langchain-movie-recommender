@@ -19,10 +19,17 @@ class MovieIndexer:
         self._loader = loader
         self._vector_store = vector_store
 
-    def index(self) -> None:
+    def index(self, **kwargs) -> None:
         """Index the movie data.
 
         Loads documents using the loader and adds them to the vector store.
+        Args:
+            **kwargs: Additional keyword arguments for loading or indexing, if needed.
         """
         documents = self._loader.load()
+
+        add_limit = kwargs.get("add_limit")
+        if add_limit is not None:
+            documents = documents[:add_limit]
+
         self._vector_store.add_documents(documents)
