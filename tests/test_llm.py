@@ -12,9 +12,12 @@ def test_create_llm_with_model(fake_model: FakeChatModelWithTools) -> None:
 
 def test_create_llm_with_model_name() -> None:
     """Test creating MovieRecommenderLLM with a model name string."""
+    from langchain_anthropic import ChatAnthropic
+
     llm = MovieRecommenderLLM(model_name="claude-haiku-4-5-20251001")
     assert llm.model is not None
-    assert llm.model.name == "claude-haiku-4-5-20251001"
+    assert isinstance(llm.model, ChatAnthropic)
+    assert llm.model.model == "claude-haiku-4-5-20251001"
 
 
 def test_chat_with_fake_model(fake_model: FakeChatModelWithTools) -> None:

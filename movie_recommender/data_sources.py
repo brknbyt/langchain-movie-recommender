@@ -65,8 +65,8 @@ class KaggleCSVDataSource:
             KaggleCSVDataSource: Configured instance from environment variables.
         """
         return cls(
-            dataset_handle=config.KAGGLE_DATASET_PATH,
-            csv_filename=config.CSV_FILENAME,
-            content_column=config.CSV_CONTENT_COLUMN,
+            dataset_handle=os.getenv("KAGGLE_DATASET_PATH", config.KAGGLE_DATASET_PATH),
+            csv_filename=os.getenv("CSV_FILENAME", config.CSV_FILENAME),
+            content_column=os.getenv("CSV_CONTENT_COLUMN", config.CSV_CONTENT_COLUMN),
             drop_na=True,
         )

@@ -18,8 +18,8 @@ def test_data_source_initialization():
     assert data_source._drop_na is True
 
 
-@patch("movie_indexer.data_sources.kagglehub.dataset_download")
-@patch("movie_indexer.data_sources.pd.read_csv")
+@patch("movie_recommender.data_sources.kagglehub.dataset_download")
+@patch("movie_recommender.data_sources.pd.read_csv")
 def test_get_loader_mocked(mock_read_csv, mock_dataset_download):
     mock_dataset_download.return_value = "/fake/data/dir"
     mock_df = pd.DataFrame(
