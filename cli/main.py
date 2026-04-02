@@ -24,7 +24,7 @@ def question_loop(llm: MovieRecommenderLLM) -> None:
     vector_store = get_vector_store(
         vector_store_name=config.VECTOR_STORE_NAME,
         embedding=embedding,
-        initialize_table=False,
+        initialize_table=True,  # TODO: Remove this after the indexer runs
     )
     llm.set_tools([make_movie_recommendation_tool(vector_store)])
     intro = (
